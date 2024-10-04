@@ -4,11 +4,10 @@ import YouTube, { YouTubePlayer } from "react-youtube";
 
 interface PlayerProps {
   trailer: any;
-  movies: any;
   correctMovie: any;
 }
 
-const times = [15_000, 20_000, 25_000, 30_000, 35_000];
+const times = [15_000, 25_000, 35_000, 45_000, 55_000];
 
 const options = {
   method: "GET",
@@ -19,7 +18,7 @@ const options = {
 };
 
 export const Player = (props: PlayerProps) => {
-  const { trailer, movies, correctMovie } = props;
+  const { trailer, correctMovie } = props;
   const [player, setPlayer] = useState<YouTubePlayer>();
   const [guesses, setGuesses] = useState(0);
   const [won, setWon] = useState(false);
@@ -41,7 +40,7 @@ export const Player = (props: PlayerProps) => {
   };
 
   const correctAnswer =
-    correctMovie.title + correctMovie.release_date.split("-")[0];
+    correctMovie.title + " " + correctMovie.release_date.split("-")[0];
 
   console.log({ correctAnswer, text });
 
