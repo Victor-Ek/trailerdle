@@ -28,6 +28,9 @@ export const Player = (props: PlayerProps) => {
   const [text, setText] = useState("");
   const [wrongGuess, setWrongGuess] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentGuess, setCurrentGuess] = useState<number | undefined>(
+    undefined
+  );
 
   const trailerToWatch = trailer.results.find(
     (trail: { type: string }) => trail.type === "Trailer"
@@ -41,6 +44,7 @@ export const Player = (props: PlayerProps) => {
       player?.playVideo();
       timeOut = setTimeout(() => {
         player.pauseVideo();
+        setIsPlaying(false);
         player.seekTo(0);
       }, times[guesses]);
     } else {
@@ -54,8 +58,9 @@ export const Player = (props: PlayerProps) => {
 
   console.log({ correctAnswer, text });
 
-  const handleSearch = async (event: any) => {
-    setText(event.target.value);
+  const handleSearch = async (event: any, value: any, reason: any) => {
+    console.log({ event, value, reason });
+    setText(value);
     const response = await fetch(
       `https://api.themoviedb.org/3/search/movie?query=${event.target.value}&include_adult=false&language=en-US&page=1`,
       options
@@ -65,9 +70,13 @@ export const Player = (props: PlayerProps) => {
     setMovies(result.results);
   };
 
+  const handleChange = (event: any, value: any, reason: any) => {
+    if (value) setCurrentGuess(value.id);
+  };
+
   const handleGuess = () => {
     setGuesses((prev) => prev + 1);
-    if (text === correctAnswer) {
+    if (currentGuess === correctMovie.id) {
       setWon(true);
     } else {
       setWrongGuess(true);
@@ -102,7 +111,11 @@ export const Player = (props: PlayerProps) => {
         </Button>
       </div>
       <div className="flex gap-2">
-        <Autocomplete options={movies} onInputChange={handleSearch} />
+        <Autocomplete
+          options={movies}
+          onInputChange={handleSearch}
+          onChange={handleChange}
+        />
         <Button
           type="button"
           onClick={handleGuess}

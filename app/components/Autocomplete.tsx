@@ -36,23 +36,26 @@ export const Autocomplete = React.forwardRef(function Autocomplete(
     anchorEl,
     setAnchorEl,
     groupedOptions,
+    value,
   } = useAutocomplete({
     ...props,
     filterOptions: (x) => x,
-    isOptionEqualToValue(option, value) {
-      return option.id === value.id;
-    },
+    // isOptionEqualToValue(option, value) {
+    //   return option.id === value.id;
+    // },
     getOptionLabel(option) {
       return option.title;
     },
     componentName: "BaseAutocompleteIntroduction",
   });
 
+  // console.log({ value });
+
   const hasClearIcon = !disableClearable && !disabled && dirty && !readOnly;
 
   const rootRef = useForkRef(ref, setAnchorEl);
 
-  console.log({ groupedOptions, props, popupOpen, rootRef, anchorEl });
+  // console.log({ groupedOptions, props, popupOpen, rootRef, anchorEl });
   return (
     <React.Fragment>
       <div
@@ -64,7 +67,7 @@ export const Autocomplete = React.forwardRef(function Autocomplete(
           id={id}
           disabled={disabled}
           readOnly={readOnly}
-          className="text-black"
+          className="text-black bg-transparent"
           {...getInputProps()}
         />
         {hasClearIcon && (
@@ -87,7 +90,7 @@ export const Autocomplete = React.forwardRef(function Autocomplete(
         >
           <ul
             {...getListboxProps()}
-            className="bg-slate-50 text-black overflow-auto max-w-64 max-h-96"
+            className="bg-slate-50 text-black overflow-auto w-64 max-h-96"
           >
             {groupedOptions.map((option, index) => {
               const optionProps = getOptionProps({ option, index });
