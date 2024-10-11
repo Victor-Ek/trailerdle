@@ -1,6 +1,8 @@
 "use client";
+import { Button } from "@mui/base";
 import { useState } from "react";
 import YouTube, { YouTubePlayer } from "react-youtube";
+import { Autocomplete } from "./Autocomplete";
 
 interface PlayerProps {
   trailer: any;
@@ -22,21 +24,29 @@ export const Player = (props: PlayerProps) => {
   const [player, setPlayer] = useState<YouTubePlayer>();
   const [guesses, setGuesses] = useState(0);
   const [won, setWon] = useState(false);
-  const [search, setSearch] = useState([]);
+  const [movies, setMovies] = useState([]);
   const [text, setText] = useState("");
   const [wrongGuess, setWrongGuess] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const trailerToWatch = trailer.results.find(
     (trail: { type: string }) => trail.type === "Trailer"
   );
 
-  const playVideo = () => {
+  const toggleVideo = () => {
     setWrongGuess(false);
-    player?.playVideo();
-    setTimeout(() => {
-      player.pauseVideo();
-      player.seekTo(0);
-    }, times[guesses]);
+    setIsPlaying((prev) => !prev);
+    let timeOut;
+    if (!isPlaying) {
+      player?.playVideo();
+      timeOut = setTimeout(() => {
+        player.pauseVideo();
+        player.seekTo(0);
+      }, times[guesses]);
+    } else {
+      player?.pauseVideo();
+      clearTimeout(timeOut);
+    }
   };
 
   const correctAnswer =
@@ -44,7 +54,7 @@ export const Player = (props: PlayerProps) => {
 
   console.log({ correctAnswer, text });
 
-  const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = async (event: any) => {
     setText(event.target.value);
     const response = await fetch(
       `https://api.themoviedb.org/3/search/movie?query=${event.target.value}&include_adult=false&language=en-US&page=1`,
@@ -52,7 +62,7 @@ export const Player = (props: PlayerProps) => {
     );
     const result = await response.json();
 
-    setSearch(result.results);
+    setMovies(result.results);
   };
 
   const handleGuess = () => {
@@ -76,39 +86,35 @@ export const Player = (props: PlayerProps) => {
         onReady={(event) => setPlayer(event.target)}
       />
       <div className="flex items-center justify-between">
-        <button type="button" onClick={playVideo}>
-          play
-        </button>
-        <button type="button" onClick={() => player?.pauseVideo()}>
-          pause
-        </button>
-        <button type="button" onClick={() => setGuesses((prev) => prev + 1)}>
-          Skip
-        </button>
+        <Button
+          className="border-pink-400 border rounded-md py-1 px-4 text-white"
+          type="button"
+          onClick={toggleVideo}
+        >
+          {isPlaying ? "⏸" : "►"}
+        </Button>
+        <Button
+          type="button"
+          className="border-pink-400 border rounded-md py-1 px-4 text-white"
+          onClick={() => setGuesses((prev) => prev + 1)}
+        >
+          Skip 👉
+        </Button>
       </div>
       <div className="flex gap-2">
-        <input
-          list="artist-and-tracks"
-          onChange={handleSearch}
-          className="text-slate-950"
-        />
-        <button type="button" onClick={handleGuess}>
+        <Autocomplete options={movies} onInputChange={handleSearch} />
+        <Button
+          type="button"
+          onClick={handleGuess}
+          className="bg-pink-400 rounded-md py-1 px-4 text-black"
+        >
           Guess
-        </button>
+        </Button>
       </div>
 
       <h1>{won ? "You won!" : ""}</h1>
       <h1>{lose ? "You lose!" : ""}</h1>
       <h1>{wrongGuess ? "Wrong! Guess again!" : ""}</h1>
-      <datalist id="artist-and-tracks">
-        {search.map((movie) => {
-          return (
-            <option key={movie.id}>
-              {movie.title} {movie.release_date.split("-")[0]}
-            </option>
-          );
-        })}
-      </datalist>
     </div>
   );
 };
